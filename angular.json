@@ -41,11 +41,15 @@
       "prefix": "app",
       "architect": {
         "build": {
-          "builder": "@angular-devkit/build-angular:browser",
+          "builder": "@angular-devkit/build-angular:application",
           "options": {
             "outputPath": "dist/ng-hydration-regression/browser",
             "index": "src/index.html",
-            "main": "src/main.ts",
+            "browser": "src/main.ts",
+            "server": "src/main.server.ts",
+            "ssr": {
+              "entry": "server.ts"
+            },
             "polyfills": [
               "zone.js"
             ],
@@ -76,9 +80,7 @@
               "outputHashing": "all"
             },
             "development": {
-              "buildOptimizer": false,
               "optimization": false,
-              "vendorChunk": true,
               "extractLicenses": false,
               "sourceMap": true,
               "namedChunks": true
@@ -103,41 +105,6 @@
           "options": {
             "buildTarget": "ng-hydration-regression:build"
           }
-        },
-        "server": {
-          "builder": "@angular-devkit/build-angular:server",
-          "options": {
-            "outputPath": "dist/ng-hydration-regression/server",
-            "main": "server.ts",
-            "tsConfig": "tsconfig.server.json"
-          },
-          "configurations": {
-            "production": {
-              "outputHashing": "media"
-            },
-            "development": {
-              "buildOptimizer": false,
-              "optimization": false,
-              "sourceMap": true,
-              "extractLicenses": false,
-              "vendorChunk": true
-            }
-          },
-          "defaultConfiguration": "production"
-        },
-        "serve-ssr": {
-          "builder": "@angular-devkit/build-angular:ssr-dev-server",
-          "configurations": {
-            "development": {
-              "browserTarget": "ng-hydration-regression:build:development",
-              "serverTarget": "ng-hydration-regression:server:development"
-            },
-            "production": {
-              "browserTarget": "ng-hydration-regression:build:production",
-              "serverTarget": "ng-hydration-regression:server:production"
-            }
-          },
-          "defaultConfiguration": "development"
         },
         "prerender": {
           "builder": "@angular-devkit/build-angular:prerender",
