@@ -11,6 +11,7 @@ export class DynamicDirective {
 
   public ngOnInit(): void {
     this.render();
+    setTimeout(() => {}, 0);
   }
 
   private async render() {
