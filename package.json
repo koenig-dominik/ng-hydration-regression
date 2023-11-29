@@ -4,9 +4,12 @@
   "scripts": {
     "ng": "ng",
     "start": "ng serve",
+    "start:webpack": "ng run ng-hydration-regression:serve-ssr-webpack",
     "build": "ng build",
+    "build:webpack": "ng run ng-hydration-regression:build-webpack && ng run ng-hydration-regression:server-webpack",
     "watch": "ng build --watch --configuration development",
-    "serve:ssr:ng-hydration-regression": "node dist/ng-hydration-regression/server/server.mjs"
+    "serve:ssr:ng-hydration-regression": "node dist/ng-hydration-regression/server/server.mjs",
+    "serve:ssr:ng-hydration-regression:webpack": "node dist/ng-hydration-regression-webpack/server/main.js"
   },
   "private": true,
   "dependencies": {
