@@ -24,6 +24,8 @@ import { from, map, tap } from 'rxjs';
     <h2>CreateComponent.insert</h2>
     <ng-template #eagerComponentHost3></ng-template>
     <ng-template #lazyComponentHost3></ng-template>
+
+    <p>Check the number of hyrdated components in your console</p>
   `,
   styles: [],
 })

@@ -7,7 +7,7 @@ import { ChangeDetectionStrategy, Component } from '@angular/core';
     imports: [
         CommonModule,
     ],
-    template: `<p>lazy-dynamic works!</p>`,
+    template: `<p>lazy-dynamic</p>`,
     styleUrl: './lazy-dynamic.component.css',
     changeDetection: ChangeDetectionStrategy.OnPush,
 })

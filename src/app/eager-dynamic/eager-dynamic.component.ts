@@ -7,7 +7,7 @@ import { ChangeDetectionStrategy, Component } from '@angular/core';
     imports: [
         CommonModule,
     ],
-    template: `<p>eager-dynamic works!</p>`,
+    template: `<p>eager-dynamic</p>`,
     styleUrl: './eager-dynamic.component.css',
     changeDetection: ChangeDetectionStrategy.OnPush,
 })
