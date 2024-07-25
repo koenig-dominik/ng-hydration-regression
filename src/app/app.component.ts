@@ -2,7 +2,7 @@ import { ApplicationRef, Component, OnInit, ViewChild, ViewContainerRef, createC
 import { CommonModule } from '@angular/common';
 import { RouterOutlet } from '@angular/router';
 import { EagerDynamicComponent } from './eager-dynamic/eager-dynamic.component';
-import { from, map, tap } from 'rxjs';
+import { firstValueFrom, from, map, shareReplay, tap } from 'rxjs';
 
 @Component({
   selector: 'app-root',
@@ -13,7 +13,7 @@ import { from, map, tap } from 'rxjs';
     <ng-template [ngComponentOutlet]="eagerComponent"></ng-template>
     <ng-template [ngComponentOutlet]="lazyComponent | async"></ng-template>
 
-    <h2>ViewContainerRef.CreateComponent</h2>
+    <h2>ViewContainerRef.createComponent</h2>
     <ng-template #eagerComponentHost></ng-template>
     <ng-template #lazyComponentHost></ng-template>
 
@@ -37,9 +37,11 @@ export class AppComponent implements OnInit {
     .pipe(
       map((c) => c.LazyDynamicComponent),
       tap(() => console.log('ComponentOutlet - lazy component loaded')),
+      shareReplay(1),
     );
 
   private applicationRef = inject(ApplicationRef);
+  private lazyComponentsTimeout = setTimeout(() => {}, 999999); // workaround for lazy components to be included in SSR output with esbuild
 
   constructor() {
     this.applicationRef
@@ -47,24 +49,25 @@ export class AppComponent implements OnInit {
       .subscribe();
   }
 
-  
-
   ngOnInit(): void {
-    this.viewContainerRefCreateComponent();
-    this.createComponentAttachView();
-    this.createComponentInsert();
-
-    setTimeout(() => {}); // workaround for lazy components to be included in SSR output with esbuild
+    Promise.all([
+      firstValueFrom(this.lazyComponent),
+      this.viewContainerRefCreateComponent(),
+      this.createComponentAttachView(),
+      this.createComponentInsert(),
+    ]).then(() => {
+      clearTimeout(this.lazyComponentsTimeout);
+    });
   }
 
   @ViewChild('eagerComponentHost', { static: true, read: ViewContainerRef }) private eagerComponentHost!: ViewContainerRef;
   @ViewChild('lazyComponentHost', { static: true, read: ViewContainerRef }) private lazyComponentHost!: ViewContainerRef;
 
-  private viewContainerRefCreateComponent(): void {
+  private async viewContainerRefCreateComponent(): Promise<void> {
     this.eagerComponentHost.createComponent(EagerDynamicComponent);
 
     // Does not hydrate with esbuild
-    import('./lazy-dynamic/lazy-dynamic.component').then((c) => {
+    return import('./lazy-dynamic/lazy-dynamic.component').then((c) => {
       console.log('ViewContainerRef.CreateComponent - lazy component loaded');
       this.lazyComponentHost.createComponent(c.LazyDynamicComponent);
     });
@@ -73,7 +76,7 @@ export class AppComponent implements OnInit {
   @ViewChild('eagerComponentHost2', { static: true, read: ViewContainerRef }) private eagerComponentHost2!: ViewContainerRef;
   @ViewChild('lazyComponentHost2', { static: true, read: ViewContainerRef }) private lazyComponentHost2!: ViewContainerRef;
 
-  private createComponentAttachView(): void {
+  private async createComponentAttachView(): Promise<void> {
     const eagerComponent = createComponent(EagerDynamicComponent, {
       hostElement: this.eagerComponentHost2.element.nativeElement,
       environmentInjector: this.applicationRef.injector,
@@ -81,7 +84,7 @@ export class AppComponent implements OnInit {
     this.applicationRef.attachView(eagerComponent.hostView);
 
     // Does not hydrate with esbuild
-    import('./lazy-dynamic/lazy-dynamic.component').then((c) => {
+    return import('./lazy-dynamic/lazy-dynamic.component').then((c) => {
       console.log('CreateComponent - lazy component (attach view) loaded');
       const lazyComponent = createComponent(c.LazyDynamicComponent, {
         hostElement: this.lazyComponentHost2.element.nativeElement,
@@ -94,7 +97,7 @@ export class AppComponent implements OnInit {
   @ViewChild('eagerComponentHost3', { static: true, read: ViewContainerRef }) private eagerComponentHost3!: ViewContainerRef;
   @ViewChild('lazyComponentHost3', { static: true, read: ViewContainerRef }) private lazyComponentHost3!: ViewContainerRef;
 
-  private createComponentInsert(): void {
+  private async createComponentInsert(): Promise<void> {
     // Does not hydrate with webpack & esbuild
     const eagerComponent = createComponent(EagerDynamicComponent, {
       environmentInjector: this.applicationRef.injector,
@@ -102,7 +105,7 @@ export class AppComponent implements OnInit {
     this.eagerComponentHost3.insert(eagerComponent.hostView);
 
     // Does not hydrate with webpack & esbuild
-    import('./lazy-dynamic/lazy-dynamic.component').then((c) => {
+    return import('./lazy-dynamic/lazy-dynamic.component').then((c) => {
       console.log('CreateComponent - lazy component (insert) loaded');
       const lazyComponent = createComponent(c.LazyDynamicComponent, {
         environmentInjector: this.applicationRef.injector,
